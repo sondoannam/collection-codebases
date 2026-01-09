@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+// SPU
+model Product {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(255)
+  slug        String   @unique @db.VarChar(255)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  variants ProductVariant[]
+}
+
+// SKU
+model ProductVariant {
+  id            String   @id @default(cuid())
+  sku           String   @unique
+  price         Decimal  @db.Decimal(12, 2)
+  stockQuantity Int      @default(0)
+  
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Quan hệ đã được thay đổi
+  // Một ProductVariant có nhiều dòng trong bảng join ProductVariantOptionValue
+  options ProductVariantOptionValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Option {
+  id     String        @id @default(cuid())
+  name   String        @unique @db.VarChar(100) // "Color", "Storage"
+  values OptionValue[]
+}
+
+model OptionValue {
+  id      String @id @default(cuid())
+  value   String @db.VarChar(100) // "Blue", "256GB"
+  synonyms  Json? 
+  
+  optionId String
+  option   Option @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  // Quan hệ đã được thay đổi
+  // Một OptionValue có nhiều dòng trong bảng join ProductVariantOptionValue
+  productVariants ProductVariantOptionValue[]
+
+  @@unique([optionId, value])
+}
+
+// BẢNG JOIN TƯỜNG MINH (EXPLICIT JOIN TABLE)
+model ProductVariantOptionValue {
+  // Quan hệ với ProductVariant
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+
+  // Quan hệ với OptionValue
+  optionValueId String
+  optionValue   OptionValue    @relation(fields: [optionValueId], references: [id], onDelete: Cascade)
+  
+  // ĐÂY LÀ KHÓA CHÍNH PHỨC HỢP
+  @@id([productVariantId, optionValueId])
+}

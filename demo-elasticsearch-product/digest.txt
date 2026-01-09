@@ -1,0 +1,1375 @@
+Directory structure:
+└── prisma-mysql-elasticsearch-product/
+    ├── README.md
+    ├── eslint.config.mjs
+    ├── nest-cli.json
+    ├── package.json
+    ├── tsconfig.build.json
+    ├── tsconfig.json
+    ├── .prettierrc
+    ├── prisma/
+    │   ├── schema.prisma
+    │   └── migrations/
+    │       ├── migration_lock.toml
+    │       ├── 20250722032529_init_product_schema/
+    │       │   └── migration.sql
+    │       └── 20250722060142_add_synonyms_to_optionvalue/
+    │           └── migration.sql
+    ├── src/
+    │   ├── app.controller.spec.ts
+    │   ├── app.controller.ts
+    │   ├── app.module.ts
+    │   ├── app.service.ts
+    │   ├── main.ts
+    │   ├── prisma/
+    │   │   ├── prisma.module.ts
+    │   │   ├── prisma.service.spec.ts
+    │   │   └── prisma.service.ts
+    │   ├── product/
+    │   │   ├── attribute-dictionary.service.ts
+    │   │   ├── demo-search.service.ts
+    │   │   ├── product.controller.ts
+    │   │   ├── product.module.ts
+    │   │   ├── product.service.ts
+    │   │   ├── query-parser.service.ts
+    │   │   └── dto/
+    │   │       ├── create-product.dto.ts
+    │   │       └── search-product.dto.ts
+    │   ├── search/
+    │   │   ├── search.module.ts
+    │   │   └── search.service.ts
+    │   ├── sync/
+    │   │   ├── sync.module.ts
+    │   │   └── sync.service.ts
+    │   └── worker/
+    │       ├── worker.module.ts
+    │       └── worker.service.ts
+    └── test/
+        ├── api.test.http
+        ├── app.e2e-spec.ts
+        └── jest-e2e.json
+
+================================================
+FILE: README.md
+================================================
+## Docker MySQL and ElasticSearch OR CLOUD           
+
+[Docker MySQL](https://www.youtube.com/watch?v=-UX_bz376UA&t=852s)
+[ElasticSearch](https://www.youtube.com/watch?v=Bs41dR_Kf-0&t=266s)
+
+## How to run
+
+```bash
+~ npm i
+~ npx prisma migrate dev --name add_synonyms_to_optionvalue
+
+~ npm run start:dev
+```
+
+## How to test
+
+Open file: "./test/api.test.http"
+
+
+================================================
+FILE: eslint.config.mjs
+================================================
+// @ts-check
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  {
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      ecmaVersion: 5,
+      sourceType: 'module',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-redundant-type-constituents': 'warn'
+    },
+  },
+);
+
+
+================================================
+FILE: nest-cli.json
+================================================
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true
+  }
+}
+
+
+
+================================================
+FILE: package.json
+================================================
+{
+  "name": "prisma-mysql-elasticsearch-product",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "start:worker": "nest start --entryFile worker --watch"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^9.0.3",
+    "@golevelup/nestjs-rabbitmq": "^6.0.1",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@prisma/client": "^6.12.0",
+    "amqplib": "^0.10.8",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.0.1",
+    "@swc/cli": "^0.6.0",
+    "@swc/core": "^1.10.7",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.7",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^15.14.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.4.2",
+    "prisma": "^6.12.0",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
+
+
+
+================================================
+FILE: tsconfig.build.json
+================================================
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
+
+
+
+================================================
+FILE: tsconfig.json
+================================================
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false
+  }
+}
+
+
+
+================================================
+FILE: .prettierrc
+================================================
+{
+  "singleQuote": true,
+  "trailingComma": "all"
+}
+
+
+================================================
+FILE: prisma/schema.prisma
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x81 in position 1103: character maps to <undefined>
+
+
+================================================
+FILE: prisma/migrations/migration_lock.toml
+================================================
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "mysql"
+
+
+
+================================================
+FILE: prisma/migrations/20250722032529_init_product_schema/migration.sql
+================================================
+-- CreateTable
+CREATE TABLE `Product` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `slug` VARCHAR(255) NOT NULL,
+    `description` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Product_slug_key`(`slug`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProductVariant` (
+    `id` VARCHAR(191) NOT NULL,
+    `sku` VARCHAR(191) NOT NULL,
+    `price` DECIMAL(12, 2) NOT NULL,
+    `stockQuantity` INTEGER NOT NULL DEFAULT 0,
+    `productId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `ProductVariant_sku_key`(`sku`),
+    INDEX `ProductVariant_productId_idx`(`productId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Option` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+
+    UNIQUE INDEX `Option_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `OptionValue` (
+    `id` VARCHAR(191) NOT NULL,
+    `value` VARCHAR(100) NOT NULL,
+    `optionId` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `OptionValue_optionId_value_key`(`optionId`, `value`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ProductVariantOptionValue` (
+    `productVariantId` VARCHAR(191) NOT NULL,
+    `optionValueId` VARCHAR(191) NOT NULL,
+
+    PRIMARY KEY (`productVariantId`, `optionValueId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `ProductVariant` ADD CONSTRAINT `ProductVariant_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `OptionValue` ADD CONSTRAINT `OptionValue_optionId_fkey` FOREIGN KEY (`optionId`) REFERENCES `Option`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductVariantOptionValue` ADD CONSTRAINT `ProductVariantOptionValue_productVariantId_fkey` FOREIGN KEY (`productVariantId`) REFERENCES `ProductVariant`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProductVariantOptionValue` ADD CONSTRAINT `ProductVariantOptionValue_optionValueId_fkey` FOREIGN KEY (`optionValueId`) REFERENCES `OptionValue`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+
+================================================
+FILE: prisma/migrations/20250722060142_add_synonyms_to_optionvalue/migration.sql
+================================================
+-- AlterTable
+ALTER TABLE `OptionValue` ADD COLUMN `synonyms` JSON NULL;
+
+
+
+================================================
+FILE: src/app.controller.spec.ts
+================================================
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+describe('AppController', () => {
+  let appController: AppController;
+
+  beforeEach(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
+    }).compile();
+
+    appController = app.get<AppController>(AppController);
+  });
+
+  describe('root', () => {
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
+    });
+  });
+});
+
+
+
+================================================
+FILE: src/app.controller.ts
+================================================
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+}
+
+
+
+================================================
+FILE: src/app.module.ts
+================================================
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { PrismaModule } from './prisma/prisma.module';
+import { SearchModule } from './search/search.module';
+import { ProductModule } from './product/product.module';
+import { WorkerModule } from './worker/worker.module';
+import { ConfigModule } from '@nestjs/config';
+// import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { SyncModule } from './sync/sync.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
+    PrismaModule, SearchModule, ProductModule, SyncModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+
+
+================================================
+FILE: src/app.service.ts
+================================================
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
+
+
+
+================================================
+FILE: src/main.ts
+================================================
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  // Cáº¥u hÃ¬nh ValidationPipe toÃ n cá»¥c Ä‘á»ƒ DTO hoáº¡t Ä‘á»™ng
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  await app.listen(3000);
+  console.log('API Server is running on: http://localhost:3000');
+}
+bootstrap();
+
+
+================================================
+FILE: src/prisma/prisma.module.ts
+================================================
+import { Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
+
+
+
+================================================
+FILE: src/prisma/prisma.service.spec.ts
+================================================
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from './prisma.service';
+
+describe('PrismaService', () => {
+  let service: PrismaService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [PrismaService],
+    }).compile();
+
+    service = module.get<PrismaService>(PrismaService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+
+
+
+================================================
+FILE: src/prisma/prisma.service.ts
+================================================
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from 'generated/prisma/client';
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  async onModuleInit() {
+    await this.$connect();
+  }
+}
+
+
+================================================
+FILE: src/product/attribute-dictionary.service.ts
+================================================
+import { Injectable } from "@nestjs/common";
+
+// attribute-dictionary.service.ts
+@Injectable()
+export class AttributeDictionaryService {
+  getDictionary(): Map<string, { normalizedValue: string; synonyms: string[] }[]> {
+    return new Map([
+      [
+        'Storage',
+        [
+          { normalizedValue: '256GB', synonyms: ['256gb', '256'] },
+          { normalizedValue: '512GB', synonyms: ['512gb', '512'] },
+          { normalizedValue: '1TB', synonyms: ['1tb', '1024gb', '1 terabyte'] },
+        ],
+      ],
+      [
+        'Color',
+        [
+          { normalizedValue: 'Galactic Blue', synonyms: ['blue', 'galactic blue'] },
+          { normalizedValue: 'Cosmic Black', synonyms: ['black', 'cosmic'] },
+          { normalizedValue: 'Crimson Red', synonyms: ['red', 'crimson'] },
+          { normalizedValue: 'Starlight Silver', synonyms: ['silver', 'starlight'] },
+        ],
+      ],
+    ]);
+  }
+}
+
+
+
+================================================
+FILE: src/product/demo-search.service.ts
+================================================
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Injectable()
+export class DemoSearchService {
+  private readonly logger = new Logger(DemoSearchService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * KỊCH BẢN 1: TÌM KIẾM TRỰC TIẾP TRÊN MYSQL
+   */
+  async searchInMySQL(q: string) {
+    this.logger.log(`[Scenario 1] Searching in MySQL for: "${q}"`);
+
+    const searchText = 'iPhone 17 Pro Max';
+    const storageValue = '1TB';
+
+    const products = await this.prisma.product.findMany({
+      where: {
+        name: { contains: searchText },
+        variants: {
+          some: {
+            options: {
+              some: {
+                optionValue: {
+                  value: storageValue,
+                  option: { name: 'Storage' },
+                },
+              },
+            },
+          },
+        },
+      },
+      // === PHẦN NÂNG CẤP ĐỂ HIỂN THỊ ĐẦY ĐỦ DỮ LIỆU ===
+      include: {
+        // Lấy tất cả các biến thể (SKU) của SPU tìm được
+        variants: {
+          include: {
+            // Với mỗi SKU, lấy ra các thuộc tính đã chọn
+            options: {
+              include: {
+                // Với mỗi thuộc tính, lấy thông tin chi tiết của OptionValue
+                optionValue: {
+                  include: {
+                    // Và lấy cả tên của Option (Color, Storage)
+                    option: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    this.logger.log(`[Scenario 1] Found ${products.length} SPU(s).`);
+    return { 
+      scenario: 1, 
+      result: products 
+    };
+  
+  }
+
+  /**
+   * KỊCH BẢN 2: TÌM KIẾM TRÊN ES VỚI DOCUMENT SPU
+   * (Chúng ta sẽ giả lập kết quả để minh họa lỗi logic)
+   */
+  async searchInSpuIndex(q: string) {
+    this.logger.log(`[Scenario 2] Searching in SPU-based ES Index for: "${q}"`);
+
+    // Phân tích query thủ công
+    const searchText = 'iPhone';
+    const color = 'Cosmic Black';
+    const storage = '1TB';
+
+    // Giả lập document SPU trong ES
+    const spuDocumentInEs = {
+      name: "iPhone 17 Pro Max",
+      available_colors: ["Starlight Silver", "Cosmic Black", "Galactic Blue", "Crimson Red"],
+      available_storages: ["256GB", "512GB", "1TB"],
+    };
+
+    // Giả lập logic tìm kiếm của ES
+    const isNameMatch = spuDocumentInEs.name.includes(searchText);
+    const isColorMatch = spuDocumentInEs.available_colors.includes(color);
+    const isStorageMatch = spuDocumentInEs.available_storages.includes(storage);
+
+    if (isNameMatch && isColorMatch && isStorageMatch) {
+      this.logger.warn(`[Scenario 2] Found a match, but it's a PHANTOM product!`);
+      return {
+        scenario: 2,
+        description: "Found a result, but it's incorrect. This SPU has 'Cosmic Black' and '1TB', but not on the same SKU. This is the 'loss of correlation' problem.",
+        result: spuDocumentInEs,
+      };
+    }
+
+    return { scenario: 2, description: "No result found.", result: null };
+  }
+}
+
+
+================================================
+FILE: src/product/product.controller.ts
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x81 in position 1923: character maps to <undefined>
+
+
+================================================
+FILE: src/product/product.module.ts
+================================================
+import { Module } from '@nestjs/common';
+import { ProductService } from './product.service';
+import { ProductController } from './product.controller';
+import { PrismaModule } from '../prisma/prisma.module';
+import { SyncModule } from '../sync/sync.module'; // <--- Import SyncModule
+import { SearchModule } from 'src/search/search.module';
+import { AttributeDictionaryService } from './attribute-dictionary.service';
+import { QueryParserService } from './query-parser.service';
+import { DemoSearchService } from './demo-search.service';
+
+@Module({
+  // ProductModule cáº§n cÃ¡c service tá»« PrismaModule vÃ  SyncModule
+  imports: [PrismaModule, SyncModule, SearchModule], 
+  controllers: [ProductController],
+  providers: [
+    ProductService, 
+    AttributeDictionaryService, 
+    QueryParserService,
+    DemoSearchService
+  ],
+})
+export class ProductModule {}
+
+
+================================================
+FILE: src/product/product.service.ts
+================================================
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { SyncService } from '../sync/sync.service';
+
+@Injectable()
+export class ProductService {
+  private readonly logger = new Logger(ProductService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly syncService: SyncService, // <--- Thay thế AmqpConnection
+  ) {}
+
+  async createProduct(dto: CreateProductDto) {
+    // Sử dụng transaction để đảm bảo tất cả các thao tác đều thành công hoặc thất bại cùng nhau
+    const newProduct = await this.prisma.$transaction(async (tx) => {
+      // 1. Tạo SPU (Sản phẩm chính)
+      const product = await tx.product.create({
+        data: {
+          name: dto.name,
+          // Tạo slug duy nhất để tránh trùng lặp
+          slug: dto.name.toLowerCase().replace(/\s+/g, '-') + `-${Date.now()}`,
+          description: dto.description,
+        },
+      });
+
+      // 2. Lặp qua từng biến thể (SKU) được gửi lên
+      for (const variantDto of dto.variants) {
+        
+        // Mảng để chứa dữ liệu cho bảng join, sẽ được dùng ở bước 4
+        const variantOptionsForJoinTable: { optionValueId: string }[] = [];
+        
+        // 3. Với mỗi option của SKU (ví dụ: Color: Blue), tìm hoặc tạo (upsert)
+        for (const optionDto of variantDto.options) {
+          // Tìm hoặc tạo `Option` (e.g., "Color", "Size")
+          const option = await tx.option.upsert({
+            where: { name: optionDto.optionName },
+            update: {},
+            create: { name: optionDto.optionName },
+          });
+
+          // Tìm hoặc tạo `OptionValue` (e.g., "Blue", "M")
+          const optionValue = await tx.optionValue.upsert({
+            where: { 
+              // Dùng unique key phức hợp đã định nghĩa trong schema
+              optionId_value: { optionId: option.id, value: optionDto.optionValue } 
+            },
+            update: {},
+            create: { optionId: option.id, value: optionDto.optionValue },
+          });
+          
+          // Thêm ID của OptionValue vào mảng để chuẩn bị liên kết
+          variantOptionsForJoinTable.push({
+            optionValueId: optionValue.id
+          });
+        }
+        
+        // 4. Tạo SKU và liên kết với các option đã xử lý ở trên thông qua bảng join
+        await tx.productVariant.create({
+          data: {
+            productId: product.id, // Liên kết với SPU
+            sku: variantDto.sku,
+            price: variantDto.price,
+            stockQuantity: variantDto.stockQuantity,
+            // Prisma sẽ tự động tạo các record trong bảng join ProductVariantOptionValue
+            options: {
+              create: variantOptionsForJoinTable,
+            },
+          },
+        });
+      }
+
+      // Trả về sản phẩm chính đã được tạo
+      return product;
+    });
+
+    // 5. Sau khi transaction thành công, gọi hàm đồng bộ (fire-and-forget)
+    // this.syncService.syncProductToEs(newProduct.id);
+    this.syncService.syncSpu(newProduct.id);
+    this.logger.log(`Sync job for product ${newProduct.id} has been dispatched.`);
+
+    return { message: 'Product created successfully. Sync in progress...', productId: newProduct.id };
+  }
+}
+
+
+================================================
+FILE: src/product/query-parser.service.ts
+================================================
+// import { Injectable } from '@nestjs/common';
+// import { AttributeDictionaryService } from './attribute-dictionary.service';
+
+// interface ParsedQuery {
+//   q: string;
+//   options: { name: string; value: string }[];
+// }
+
+// @Injectable()
+// export class QueryParserService {
+//   constructor(private readonly dictionaryService: AttributeDictionaryService) {}
+
+//   public parse(rawQuery: string): ParsedQuery {
+//     const dictionary = this.dictionaryService.getDictionary();
+//     const tokens = rawQuery.toLowerCase().split(' ').filter(Boolean); // Tách từ và loại bỏ khoảng trắng thừa
+
+//     const searchTextParts: string[] = [];
+//     const foundOptions: { name: string; value: string }[] = [];
+//     const processedTokens = new Set<string>();
+
+//     // Vòng 1: Tìm các token khớp với thuộc tính
+//     for (const token of tokens) {
+//       for (const [optionName, values] of dictionary.entries()) {
+//         const foundValue = values.find(v => v.synonyms.includes(token));
+//         if (foundValue) {
+//           foundOptions.push({ name: optionName, value: foundValue.normalizedValue });
+//           processedTokens.add(token);
+//           break; // Đã tìm thấy, chuyển sang token tiếp theo
+//         }
+//       }
+//     }
+
+//     // Vòng 2: Các token không phải thuộc tính sẽ là search text
+//     for (const token of tokens) {
+//       if (!processedTokens.has(token)) {
+//         searchTextParts.push(token);
+//       }
+//     }
+
+//     return {
+//       q: searchTextParts.join(' '),
+//       options: foundOptions,
+//     };
+//   }
+// }
+
+import { Injectable, Logger } from '@nestjs/common';
+import { AttributeDictionaryService } from './attribute-dictionary.service';
+
+interface ParsedQuery {
+  q: string;
+  options: { name: string; value: string }[];
+}
+
+@Injectable()
+export class QueryParserService {
+  private readonly logger = new Logger(QueryParserService.name);
+
+  constructor(private readonly dictionaryService: AttributeDictionaryService) {}
+
+  public parse(rawQuery: string): ParsedQuery {
+    const dictionary = this.dictionaryService.getDictionary();
+    console.log('Dictionary:', dictionary);
+    const tokens = rawQuery.toLowerCase().split(' ').filter(Boolean);
+
+    const searchTextParts: string[] = [];
+    const foundOptions: { name: string; value: string }[] = [];
+    const consumedTokens = new Set<string>();
+
+    for (const token of tokens) {
+      if (consumedTokens.has(token)) continue; // Bỏ qua token đã xử lý
+
+      let found = false;
+      for (const [optionName, values] of dictionary.entries()) {
+        const foundValue = values.find(v => v.synonyms.includes(token));
+        if (foundValue) {
+          foundOptions.push({ name: optionName, value: foundValue.normalizedValue });
+          consumedTokens.add(token);
+          found = true;
+          break; // Tìm thấy rồi, chuyển sang token tiếp theo
+        }
+      }
+
+      if (!found) {
+        searchTextParts.push(token);
+      }
+    }
+    
+    const result: ParsedQuery = {
+      q: searchTextParts.join(' '),
+      options: foundOptions,
+    };
+
+    this.logger.log(`Parsed query: q='${result.q}', options=${JSON.stringify(result.options)}`);
+    return result;
+  }
+}
+
+
+================================================
+FILE: src/product/dto/create-product.dto.ts
+================================================
+import { Type } from 'class-transformer';
+import { IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+
+class VariantOptionDto {
+  @IsNotEmpty()
+  @IsString()
+  optionName: string; // e.g., "Color"
+
+  @IsNotEmpty()
+  @IsString()
+  optionValue: string; // e.g., "Blue"
+}
+
+class VariantDto {
+  @IsNotEmpty()
+  @IsString()
+  sku: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  price: number;
+
+  @IsNumber()
+  stockQuantity: number;
+  
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => VariantOptionDto)
+  options: VariantOptionDto[];
+}
+
+export class CreateProductDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string; // TÃªn SPU
+
+  @IsString()
+  description: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => VariantDto)
+  variants: VariantDto[];
+}
+
+
+================================================
+FILE: src/product/dto/search-product.dto.ts
+================================================
+import { Type } from 'class-transformer';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+
+class SearchOptionDto {
+  @IsString()
+  name: string; // e.g., "Color"
+
+  @IsString()
+  value: string; // e.g., "Black"
+}
+
+export class SearchProductDto {
+  @IsString()
+  @IsOptional() // Cho phép tìm kiếm không cần text, chỉ lọc theo option
+  q?: string; // Query text, e.g., "áo thun"
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => SearchOptionDto)
+  options?: SearchOptionDto[]; // Array of options, e.g., [{ name: 'Color', value: 'Black' }]
+}
+
+
+================================================
+FILE: src/search/search.module.ts
+================================================
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { SearchService } from './search.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
+
+@Module({
+  imports: [ConfigModule, PrismaModule], // Pháº£i import Ä‘á»ƒ inject ConfigService
+  providers: [SearchService],
+  exports: [SearchService], // Export Ä‘á»ƒ cÃ¡c module khÃ¡c dÃ¹ng Ä‘Æ°á»£c
+})
+export class SearchModule {}
+
+
+================================================
+FILE: src/search/search.service.ts
+================================================
+Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x90 in position 3308: character maps to <undefined>
+
+
+================================================
+FILE: src/sync/sync.module.ts
+================================================
+import { Module } from '@nestjs/common';
+import { SyncService } from './sync.service';
+import { PrismaModule } from '../prisma/prisma.module';
+import { SearchModule } from '../search/search.module';
+
+@Module({
+  // SyncService cáº§n PrismaModule vÃ  SearchModule
+  imports: [PrismaModule, SearchModule],
+  providers: [SyncService],
+  // Export SyncService Ä‘á»ƒ ProductModule cÃ³ thá»ƒ sá»­ dá»¥ng
+  exports: [SyncService],
+})
+export class SyncModule {}
+
+
+================================================
+FILE: src/sync/sync.service.ts
+================================================
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { SearchService } from '../search/search.service';
+
+@Injectable()
+export class SyncService {
+  private readonly logger = new Logger(SyncService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly searchService: SearchService,
+  ) {}
+
+  // Đây là hàm sẽ được gọi từ ProductService
+  public async syncProductToEs(productId: string): Promise<void> {
+    this.logger.log(`Syncing product to ES: ${productId}`);
+    try {
+      const esDocument = await this.fetchAndTransformProduct(productId);
+      if (esDocument) {
+        await this.searchService.indexProduct(esDocument);
+        this.logger.log(`Successfully synced product ${productId}`);
+      } else {
+        this.logger.warn(
+          `Product ${productId} not found or invalid. Skipping.`,
+        );
+        // Ở đây có thể thêm logic xóa document khỏi ES nếu cần
+      }
+    } catch (error) {
+      this.logger.error(`Failed to sync product ${productId}`, error.stack);
+    }
+  }
+
+  // Hàm này giữ nguyên, đã được sửa lỗi type-safety
+  private async fetchAndTransformProduct(
+    productId: string,
+  ): Promise<any | null> {
+    // ... logic giống hệt như trong WorkerService trước đó ...
+    const productFromDb = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        variants: {
+          include: {
+            options: {
+              include: {
+                optionValue: {
+                  include: { option: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!productFromDb) return null;
+    const variants = productFromDb.variants;
+    if (variants.length === 0) return null;
+
+    const minPrice = Math.min(...variants.map((v) => v.price.toNumber()));
+    const maxPrice = Math.max(...variants.map((v) => v.price.toNumber()));
+    const totalStock = variants.reduce((sum, v) => sum + v.stockQuantity, 0);
+    const optionMap = new Map<string, Set<string>>();
+
+    variants.forEach((variant) => {
+      variant.options.forEach((opt) => {
+        if (!opt.optionValue?.option) return;
+        const optionName = opt.optionValue.option.name;
+        const optionValue = opt.optionValue.value;
+        let valueSet = optionMap.get(optionName);
+        if (!valueSet) {
+          valueSet = new Set<string>();
+          optionMap.set(optionName, valueSet);
+        }
+        valueSet.add(optionValue);
+      });
+    });
+
+    const esAvailableOptions: { name: string; value: string }[] = [];
+    optionMap.forEach((values, name) => {
+      values.forEach((value) => {
+        esAvailableOptions.push({ name, value });
+      });
+    });
+
+    return {
+      spu_id: productFromDb.id,
+      slug: productFromDb.slug,
+      name: productFromDb.name,
+      description: productFromDb.description,
+      price_range: { min: minPrice, max: maxPrice },
+      total_stock: totalStock,
+      is_in_stock: totalStock > 0,
+      available_options: esAvailableOptions,
+      updated_at: productFromDb.updatedAt,
+    };
+  }
+
+  public async syncSpu(spuId: string): Promise<void> {
+    this.logger.log(`Fetching data for SPU ${spuId} to sync.`);
+    try {
+      const spuData = await this.prisma.product.findUnique({
+        where: { id: spuId },
+        include: {
+          variants: {
+            include: {
+              options: {
+                include: {
+                  optionValue: {
+                    include: { option: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!spuData || spuData.variants.length === 0) {
+        this.logger.warn(
+          `SPU ${spuId} not found or has no variants. Skipping.`,
+        );
+        return;
+      }
+
+      // Xây dựng một danh sách các document SKU, MỖI SKU CÓ ATTRS RIÊNG
+      const skuDocuments = spuData.variants.map((sku) => {
+        // **LOGIC ĐÚNG:** Lấy ra các thuộc tính CỤ THỂ của SKU hiện tại
+        const specificAttrs = sku.options.map((opt) => ({
+          attrId: opt.optionValue.option.id,
+          attrName: opt.optionValue.option.name,
+          attrValue: opt.optionValue.value,
+        }));
+
+        const skuEsModel = {
+          skuId: sku.id,
+          spuId: spuData.id,
+          skuTitle: spuData.name, // Sẽ được tìm kiếm không dấu
+          skuPrice: sku.price.toNumber(),
+          skuImg: 'default_image.jpg',
+          hasStock: sku.stockQuantity > 0,
+          hotScore: 0.0,
+          saleCount: 0,
+          brandId: 'brand_id_placeholder',
+          brandName: 'Brand Placeholder',
+          catalogId: 'catalog_id_placeholder',
+          catalogName: 'Catalog Placeholder',
+          // Gán các thuộc tính CỤ THỂ của SKU này
+          attrs: specificAttrs,
+        };
+        return skuEsModel;
+      });
+
+      await this.searchService.bulkIndexProducts(skuDocuments);
+      this.logger.log(
+        `Successfully synced ${skuDocuments.length} SKUs for SPU ${spuId}.`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to sync SPU ${spuId}`, error.stack);
+    }
+  }
+}
+
+
+
+================================================
+FILE: src/worker/worker.module.ts
+================================================
+// src/worker/worker.module.ts
+
+import { Module } from '@nestjs/common';
+import { WorkerService } from './worker.service';
+import { PrismaModule } from '../prisma/prisma.module'; // <--- IMPORT THÊM
+import { SearchModule } from '../search/search.module'; // <--- IMPORT THÊM
+
+@Module({
+  imports: [PrismaModule, SearchModule], // <--- KHAI BÁO Ở ĐÂY
+  providers: [WorkerService],
+})
+export class WorkerModule {}
+
+
+================================================
+FILE: src/worker/worker.service.ts
+================================================
+import { Injectable, Logger } from '@nestjs/common';
+import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import { PrismaService } from '../prisma/prisma.service';
+import { SearchService } from '../search/search.service';
+
+@Injectable()
+export class WorkerService {
+  private readonly logger = new Logger(WorkerService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly searchService: SearchService,
+  ) {}
+
+  @RabbitSubscribe({
+    exchange: 'product.events',
+    routingKey: 'product.*',
+    queue: 'sync-product-to-es-queue',
+  })
+  public async handleProductEvent(msg: { productId: string }) {
+    this.logger.log(`Received product event for ID: ${msg.productId}`);
+    try {
+      const esDocument = await this.fetchAndTransformProduct(msg.productId);
+      if (esDocument) {
+        await this.searchService.indexProduct(esDocument);
+        this.logger.log(`Synced product ${msg.productId} to ES.`);
+      } else {
+        this.logger.warn(`Product ${msg.productId} not found or has no variants. Skipping sync.`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to sync product ${msg.productId}`, error.stack);
+    }
+  }
+
+  private async fetchAndTransformProduct(productId: string): Promise<any | null> {
+    const productFromDb = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        variants: {
+          include: {
+            options: {
+              include: {
+                optionValue: {
+                  include: { option: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!productFromDb) return null;
+    const variants = productFromDb.variants;
+    if (variants.length === 0) return null;
+
+    const minPrice = Math.min(...variants.map(v => v.price.toNumber()));
+    const maxPrice = Math.max(...variants.map(v => v.price.toNumber()));
+    const totalStock = variants.reduce((sum, v) => sum + v.stockQuantity, 0);
+    const optionMap = new Map<string, Set<string>>();
+
+    variants.forEach(variant => {
+      variant.options.forEach(opt => {
+        if (!opt.optionValue?.option) return;
+        const optionName = opt.optionValue.option.name;
+        const optionValue = opt.optionValue.value;
+        let valueSet = optionMap.get(optionName);
+        if (!valueSet) {
+          valueSet = new Set<string>();
+          optionMap.set(optionName, valueSet);
+        }
+        valueSet.add(optionValue);
+      });
+    });
+
+    const esAvailableOptions: { name: string; value: string }[] = [];
+    optionMap.forEach((values, name) => {
+      values.forEach(value => { esAvailableOptions.push({ name, value }); });
+    });
+
+    return {
+      spu_id: productFromDb.id,
+      slug: productFromDb.slug,
+      name: productFromDb.name,
+      description: productFromDb.description,
+      price_range: { min: minPrice, max: maxPrice },
+      total_stock: totalStock,
+      is_in_stock: totalStock > 0,
+      available_options: esAvailableOptions,
+      updated_at: productFromDb.updatedAt,
+    };
+  }
+}
+
+
+================================================
+FILE: test/api.test.http
+================================================
+### Search scenario1
+GET http://localhost:3000/products/search/scenario1?q=iPhone 17 Pro Max 1TB HTTP/1.1
+      
+### Search scenario2
+GET http://localhost:3000/products/search/scenario2?q=iPhone 17 Pro Max 1TB HTTP/1.1
+
+### Search scenario3
+GET http://localhost:3000/products/search/scenario3?q=iPhone 17 Pro Max 1TB HTTP/1.1
+
+
+### Create Product
+POST http://localhost:3000/products HTTP/1.1
+Content-Type: application/json
+{
+  "name": "iPhone 17 Pro Max",
+  "description": "Trải nghiệm đỉnh cao với chip A19 Bionic, màn hình ProMotion XDR và hệ thống camera Magsafe thế hệ mới. Thiết kế titan siêu bền, siêu nhẹ.",
+  "variants": [
+    {
+      "sku": "IP17PM-V5-256-SLV",
+      "price": 33990000,
+      "stockQuantity": 120,
+      "options": [
+        { "optionName": "Color", "optionValue": "Silver" },
+        { "optionName": "Storage", "optionValue": "256GB" }
+      ]
+    },
+    {
+      "sku": "IP17PM-V5-512-BLK",
+      "price": 37990000,
+      "stockQuantity": 200,
+      "options": [
+        { "optionName": "Color", "optionValue": "Black" },
+        { "optionName": "Storage", "optionValue": "512GB" }
+      ]
+    },
+    {
+      "sku": "IP17PM-V5-1TB-BLU",
+      "price": 43990000,
+      "stockQuantity": 75,
+      "options": [
+        { "optionName": "Color", "optionValue": "Blue" },
+        { "optionName": "Storage", "optionValue": "1TB" }
+      ]
+    },
+    {
+      "sku": "IP17PM-V5-256-RED",
+      "price": 33990000,
+      "stockQuantity": 150,
+      "options": [
+        { "optionName": "Color", "optionValue": "Red" },
+        { "optionName": "Storage", "optionValue": "256GB" }
+      ]
+    }
+  ]
+}
+
+
+================================================
+FILE: test/app.e2e-spec.ts
+================================================
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { App } from 'supertest/types';
+import { AppModule } from './../src/app.module';
+
+describe('AppController (e2e)', () => {
+  let app: INestApplication<App>;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/ (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/')
+      .expect(200)
+      .expect('Hello World!');
+  });
+});
+
+
+
+================================================
+FILE: test/jest-e2e.json
+================================================
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
+
+

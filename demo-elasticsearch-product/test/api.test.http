@@ -1,0 +1,55 @@
+### Search scenario1
+GET http://localhost:3000/products/search/scenario1?q=iPhone 17 Pro Max 1TB HTTP/1.1
+      
+### Search scenario2
+GET http://localhost:3000/products/search/scenario2?q=iPhone 17 Pro Max 1TB HTTP/1.1
+
+### Search scenario3
+GET http://localhost:3000/products/search/scenario3?q=iPhone 17 Pro Max 1TB HTTP/1.1
+
+
+### Create Product
+POST http://localhost:3000/products HTTP/1.1
+Content-Type: application/json
+{
+  "name": "iPhone 17 Pro Max",
+  "description": "Trải nghiệm đỉnh cao với chip A19 Bionic, màn hình ProMotion XDR và hệ thống camera Magsafe thế hệ mới. Thiết kế titan siêu bền, siêu nhẹ.",
+  "variants": [
+    {
+      "sku": "IP17PM-V5-256-SLV",
+      "price": 33990000,
+      "stockQuantity": 120,
+      "options": [
+        { "optionName": "Color", "optionValue": "Silver" },
+        { "optionName": "Storage", "optionValue": "256GB" }
+      ]
+    },
+    {
+      "sku": "IP17PM-V5-512-BLK",
+      "price": 37990000,
+      "stockQuantity": 200,
+      "options": [
+        { "optionName": "Color", "optionValue": "Black" },
+        { "optionName": "Storage", "optionValue": "512GB" }
+      ]
+    },
+    {
+      "sku": "IP17PM-V5-1TB-BLU",
+      "price": 43990000,
+      "stockQuantity": 75,
+      "options": [
+        { "optionName": "Color", "optionValue": "Blue" },
+        { "optionName": "Storage", "optionValue": "1TB" }
+      ]
+    },
+    {
+      "sku": "IP17PM-V5-256-RED",
+      "price": 33990000,
+      "stockQuantity": 150,
+      "options": [
+        { "optionName": "Color", "optionValue": "Red" },
+        { "optionName": "Storage", "optionValue": "256GB" }
+      ]
+    }
+  ]
+}
